@@ -1,0 +1,30 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main(void) {
+    printf("[PARENT] PID = %d, about to fork...\n", getpid());
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("fork failed");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) {
+        printf("[CHILD]  PID = %d before exec (same PID, different program soon)\n",
+               getpid());
+
+        execlp("ls", "ls", "-l", (char *)NULL);
+
+        perror("execlp failed");
+        exit(EXIT_FAILURE);
+    } else {
+        int status;
+        waitpid(pid, &status, 0);
+        printf("[PARENT] Child PID %d (exec'd into ls) finished with status %d\n",
+               pid, WEXITSTATUS(status));
+    }
+
+    return 0;
+}
