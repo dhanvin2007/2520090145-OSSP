@@ -1,0 +1,34 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main(void) {
+    printf("Before fork: PID = %d, PPID = %d\n", getpid(), getppid());
+    fflush(stdout);
+
+    pid_t pid = fork();
+
+    if (pid < 0) {
+        perror("fork failed");
+        exit(EXIT_FAILURE);
+    } else if (pid == 0) {
+        printf("[CHILD]  PID = %d, Parent PID (PPID) = %d\n",
+               getpid(), getppid());
+        sleep(2);
+        printf("[CHILD]  Exiting now.\n");
+        exit(42);
+    } else {
+        printf("[PARENT] PID = %d, Child's PID = %d\n", getpid(), pid);
+
+        int status;
+        pid_t waited_pid = wait(&status);
+
+        if (WIFEXITED(status)) {
+            printf("[PARENT] Reaped child PID %d, exit status = %d\n",
+                   waited_pid, WEXITSTATUS(status));
+        }
+    }
+
+    return 0;
+}
