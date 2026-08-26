@@ -1,0 +1,24 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+int main(void) {
+    pid_t pid = fork();
+
+    if (pid == 0) {
+        printf("[CHILD] PID = %d exiting immediately.\n", getpid());
+        exit(0);
+    } else {
+        printf("[PARENT] PID = %d. Child PID = %d is now a zombie for 15s.\n",
+               getpid(), pid);
+        printf("[PARENT] Run `ps -el | grep Z` in another terminal now.\n");
+
+        sleep(15);
+
+        wait(NULL);
+        printf("[PARENT] Child reaped. Zombie cleared.\n");
+    }
+
+    return 0;
+}
