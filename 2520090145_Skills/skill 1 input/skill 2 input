@@ -1,0 +1,86 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <termios.h>
+#include <string.h>
+
+#define BUFFER_SIZE 100
+
+void enable_raw_mode(struct termios *old)
+{
+    struct termios new;
+
+    tcgetattr(STDIN_FILENO, old);
+    new = *old;
+
+    new.c_lflag &= ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &new);
+}
+
+void disable_raw_mode(struct termios *old)
+{
+    tcsetattr(STDIN_FILENO, TCSANOW, old);
+}
+
+int main()
+{
+    char buffer[BUFFER_SIZE];
+    int index;
+    char ch;
+    struct termios old;
+
+    enable_raw_mode(&old);
+
+    printf("Interactive Command Shell\n");
+    printf("Type 'exit' to quit.\n\n");
+
+    while (1)
+    {
+        index = 0;
+        printf("myshell> ");
+        fflush(stdout);
+
+        while (1)
+        {
+            read(STDIN_FILENO, &ch, 1);
+
+            /* Enter key */
+            if (ch == '\n' || ch == '\r')
+            {
+                buffer[index] = '\0';
+                printf("\n");
+
+                if (strcmp(buffer, "exit") == 0)
+                {
+                    disable_raw_mode(&old);
+                    printf("Exiting shell...\n");
+                    return 0;
+                }
+
+                printf("You entered: %s\n", buffer);
+                break;
+            }
+
+            /* Backspace */
+            else if (ch == 127 || ch == '\b')
+            {
+                if (index > 0)
+                {
+                    index--;
+                    printf("\b \b");
+                    fflush(stdout);
+                }
+            }
+
+            /* Normal character */
+            else if (index < BUFFER_SIZE - 1)
+            {
+                buffer[index++] = ch;
+                printf("%c", ch);
+                fflush(stdout);
+            }
+        }
+    }
+
+    disable_raw_mode(&old);
+    return 0;
+}
