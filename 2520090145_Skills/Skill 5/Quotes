@@ -1,0 +1,14 @@
+echo
+echo "----- DOUBLE QUOTES -----"
+
+echo "Hello World"
+echo "My name is $name"
+echo "Course: $course"
+
+message="Operating Systems Lab"
+echo "$message"
+
+echo "This sentence contains spaces."
+
+command="echo Hello from Ubuntu"
+echo "$command"
